@@ -1,19 +1,25 @@
 const express = require("express");
 const dotenv = require("dotenv");
 const morgan = require("morgan");
-const mongoose = require("mongoose");
+const databaseConnection = require("./config/database");
+const categoryRouter = require("./routes/categoryRoutes");
 const bodyParser =require("body-parser");
 const app = express();
+app.use(express.json());
 dotenv.config({path:"./config.env"});
 
 
 if(process.env.NODE_ENV === 'development'){
     app.use(morgan("dev"));
 }
-app.use(bodyParser.urlencoded({extended:false}));
+const PORT = process.env.PORT || 8000;
+app.listen(PORT,()=>{
+    console.log("listening")
+})
+databaseConnection();
 
-const DB = process.env.DATABASE.replace("<password>",process.env.PASSWORD);
-mongoose.connect(DB).then(()=> console.log("connected to database"));
+app.use("/category",categoryRouter);
+app.use(bodyParser.urlencoded({extended:false}));
 
 app.use((request,response,next)=>{
     response.status(404).json({
@@ -27,7 +33,4 @@ app.use((error,request,response,next)=>{
     })
 });
 
-const PORT = process.env.PORT || 8000;
-app.listen(PORT,()=>{
-    console.log("listening")
-})
+
