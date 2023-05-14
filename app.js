@@ -1,6 +1,8 @@
 const express = require("express");
 const dotenv = require("dotenv");
 const morgan = require("morgan");
+const ApiError = require("./utils/ApiError");
+const globalError = require("./middleware/errorMW");
 const databaseConnection = require("./config/database");
 const categoryRouter = require("./routes/categoryRoutes");
 const bodyParser =require("body-parser");
@@ -8,18 +10,23 @@ const app = express();
 app.use(express.json());
 dotenv.config({path:"./config.env"});
 
+app.use(bodyParser.urlencoded({extended:false}));
 
 if(process.env.NODE_ENV === 'development'){
     app.use(morgan("dev"));
 }
+
+databaseConnection();
 const PORT = process.env.PORT || 8000;
-app.listen(PORT,()=>{
+const server = app.listen(PORT,()=>{
     console.log("listening")
 })
-databaseConnection();
 
 app.use("/category",categoryRouter);
-app.use(bodyParser.urlencoded({extended:false}));
+
+app.all("*",(request,response,next)=>{
+    next(new ApiError(`cant find this route ${request.originalUrl}`,400));
+})
 
 app.use((request,response,next)=>{
     response.status(404).json({
@@ -27,10 +34,13 @@ app.use((request,response,next)=>{
     })
 });
 
-app.use((error,request,response,next)=>{
-    response.status(500).json({
-        message:error+""
+app.use(globalError);
+
+// error outside express
+process.on("unhandledRejection",(error)=>{
+    console.log(`UnhandledRejection ${error}`);
+    server.close(()=>{
+        console.error("Shut down...")
+        process.exit(1);
     })
-});
-
-
+})
