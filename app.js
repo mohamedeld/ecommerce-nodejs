@@ -1,11 +1,13 @@
 const express = require("express");
 const dotenv = require("dotenv");
 const morgan = require("morgan");
+const bodyParser =require("body-parser");
 const ApiError = require("./utils/ApiError");
 const globalError = require("./middleware/errorMW");
 const databaseConnection = require("./config/database");
 const categoryRouter = require("./routes/categoryRoutes");
-const bodyParser =require("body-parser");
+const subCategoryRouter =require("./routes/subCategoryRouter");
+
 const app = express();
 app.use(express.json());
 dotenv.config({path:"./config.env"});
@@ -23,6 +25,7 @@ const server = app.listen(PORT,()=>{
 })
 
 app.use("/category",categoryRouter);
+app.use("/subCategory",subCategoryRouter);
 
 app.all("*",(request,response,next)=>{
     next(new ApiError(`cant find this route ${request.originalUrl}`,400));
