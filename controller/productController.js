@@ -19,13 +19,11 @@ exports.createProduct = async(request,response,next)=>{
 
 exports.getAllProducts = async(request,response,next)=>{
     try{
-        const page = request.query.page *1 ;
-        const limit = request.query.limit*1;
+        const page = request.query.page * 1 || 1;
+        const limit = request.query.limit * 1 || 5;
         const skip = (page - 1) * limit;
         const products = await Product.find({}).skip(skip).limit(limit);
         response.status(200).json({
-            results:products.length,
-            page,
             data:{
                 products
             }
@@ -37,7 +35,10 @@ exports.getAllProducts = async(request,response,next)=>{
 
 exports.getProduct = async(request,response,next)=>{
     try{
-        const product = await Product.findById(request.params.id);
+        const product = await Product.findById(request.params.id).populate({
+            path:"category",
+            select:"name-_id"
+        });
         if(!product){
             throw new Error("product id is invalid")
         }
@@ -52,7 +53,9 @@ exports.getProduct = async(request,response,next)=>{
 };
 exports.updateProduct = async(request,response,next)=>{
     try{
-        request.body.slug = slugify(request.body.title);
+        if(request.body.title){
+            request.body.slug = slugify(request.body.title);
+        }
         const product = await Product.findByIdAndUpdate(request.params.id,request.body,{new:true});
         if(!product){
             throw new Error("product id is invalid")

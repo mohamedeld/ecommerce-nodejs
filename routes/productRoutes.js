@@ -5,9 +5,9 @@ const checkValidator = require("../middleware/checkValidator");
 const {addProductValidator,getProductValidator,updateProductValidator,deleteProductValidator}=require("../middleware/validator/productValidator");
 const productController = require("../controller/productController");
 
-router.route("/",productController.getAllProducts).post(addProductValidator,checkValidator,productController.createProduct);
+router.route("/").get(productController.getAllProducts).post(addProductValidator,checkValidator,productController.createProduct);
 
-router.route("/:id",getProductValidator,checkValidator,productController.getProduct).patch(updateProductValidator,checkValidator,productController.updateProduct).delete(deleteProductValidator,checkValidator,productController.deleteProduct);
+router.route("/:id").get(getProductValidator,checkValidator,productController.getProduct).patch(updateProductValidator,checkValidator,productController.updateProduct).delete(deleteProductValidator,checkValidator,productController.deleteProduct);
 
 
 module.exports = router;
