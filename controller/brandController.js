@@ -1,57 +1,80 @@
-const asyncHandler = require("express-async-handler");
 const slugify = require("slugify");
 const Brand = require("../Model/brandModel");
-const ApiError = require("../utils/ApiError");
 
-exports.createBrand = asyncHandler(async(request,response,next)=>{
-    const {name,image} = request.body;
-    const brands =await Brand.create({name,slug:slugify(name),image});
-    response.status(200).json({
-        data:{
-            brands
-        }
-    })
-});
 
-exports.getAllBrands = asyncHandler(async(request,response,next)=>{
-    const brands = await Brand.find({});
-    response.status(200).json({
-        data:{
-            brands
-        }
-    })
-});
-
-exports.getBrand = asyncHandler(async(request,response,next)=>{
-    const brand = await Brand.findById(request.params.id);
-    if(!brand){
-        next(new ApiError("invlalid id",404));
+exports.createBrand = async(request,response,next)=>{
+    try{
+        const {name,image} = request.body;
+        const brands =await Brand.create({name,slug:slugify(name),image});
+        response.status(200).json({
+            data:{
+                brands
+            }
+        })
+    }catch(err){
+        next(err);
     }
-    response.status(200).json({
-        data:{
-            brand
-        }
-    })
-});
+    
+};
 
-exports.updateBrand = asyncHandler(async(request,response,next)=>{
-    const brand = await Brand.findByIdAndUpdate(request.params.id,request.body,{new:true});
-    if(!brand){
-        next(new ApiError("invlalid id",404));
+exports.getAllBrands = async(request,response,next)=>{
+    try{
+        const page = request.query.page *1;
+        const limit = request.query.limit *1;
+        const skip = (page -1)*limit;
+        const brands = await Brand.find({}).skip(skip).limit(limit);
+        response.status(200).json({
+            data:{
+                brands
+            }
+        })
+    }catch(err){
+        next(err);
     }
-    response.status(200).json({
-        data:{
-            brand
-        }
-    })
-});
+};
 
-exports.deleteBrand = asyncHandler(async(request,response,next)=>{
-    const brand = await Brand.findByIdAndDelete(request.params.id);
-    if(!brand){
-        next(new ApiError("invlalid id",404));
+exports.getBrand = async(request,response,next)=>{
+    try{
+        const brand = await Brand.findById(request.params.id);
+        if(!brand){
+            throw new Error("brand id is invalid")
+        }
+        response.status(200).json({
+            data:{
+                brand
+            }
+        })
+    }catch(err){
+        next(err);
     }
-    response.status(200).json({
-        message:"deleted"
-    })
-});
+};
+
+exports.updateBrand = async(request,response,next)=>{
+    try{
+        const brand = await Brand.findByIdAndUpdate(request.params.id,request.body,{new:true});
+        if(!brand){
+            throw new Error("brand id is invalid")
+        }
+        response.status(200).json({
+            data:{
+                brand
+            }
+        })
+    }catch(err){
+        next(err);
+    }
+};
+
+exports.deleteBrand = async(request,response,next)=>{
+    try{
+        const brand = await Brand.findByIdAndDelete(request.params.id);
+        if(!brand){
+            throw new Error("brand id is invalid")
+        }
+        response.status(200).json({
+            message:"deleted"
+        })
+    }catch(err){
+        next(err);
+    }
+};

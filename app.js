@@ -2,12 +2,13 @@ const express = require("express");
 const dotenv = require("dotenv");
 const morgan = require("morgan");
 const bodyParser =require("body-parser");
-const ApiError = require("./utils/ApiError");
-const globalError = require("./middleware/errorMW");
+
+// const globalError = require("./middleware/errorMW");
 const databaseConnection = require("./config/database");
 const categoryRouter = require("./routes/categoryRoutes");
 const subCategoryRouter =require("./routes/subCategoryRouter");
 const brandRouter = require("./routes/brandRoutes");
+const productRouter = require("./routes/productRoutes");
 
 const app = express();
 app.use(express.json());
@@ -28,10 +29,8 @@ const server = app.listen(PORT,()=>{
 app.use("/category",categoryRouter);
 app.use("/subCategory",subCategoryRouter);
 app.use("/brand",brandRouter);
+app.use("/product",productRouter);
 
-app.all("*",(request,response,next)=>{
-    next(new ApiError(`cant find this route ${request.originalUrl}`,400));
-})
 
 app.use((request,response,next)=>{
     response.status(404).json({
@@ -39,7 +38,11 @@ app.use((request,response,next)=>{
     })
 });
 
-app.use(globalError);
+app.use((error,request,response,next)=>{
+    response.status(500).json({
+        message:error+""
+    })
+});
 
 // error outside express
 process.on("unhandledRejection",(error)=>{

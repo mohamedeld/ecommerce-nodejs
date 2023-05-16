@@ -1,11 +1,11 @@
-const asyncHandler = require("express-async-handler");
+
 const slugify = require("slugify");
 const Category = require("../Model/categoryModel");
-const ApiError = require("../utils/ApiError");
 
 
-exports.createCategory =asyncHandler(async(request,response,next)=>{
 
+exports.createCategory =async(request,response,next)=>{
+    try{
         const {name} = request.body;
         const category = await Category.create({name,slug:slugify(name)});
         response.status(200).json({
@@ -14,8 +14,12 @@ exports.createCategory =asyncHandler(async(request,response,next)=>{
                 category
             }
         })
-});
-exports.getCategories =asyncHandler(async(request,response,next)=>{
+    }catch(err){
+        next(err);
+    }
+};
+exports.getCategories = async(request,response,next)=>{
+    try{
         const page=request.query.page * 1 || 1;
         const limit = request.query.limit * 1 || 5;
         const skip = (page - 1)*limit;
@@ -27,41 +31,57 @@ exports.getCategories =asyncHandler(async(request,response,next)=>{
                 categories
             }
         })
-});
+    }catch(err){
+        next(err);
+    }
+};
 
-exports.getCategory =asyncHandler(async(request,response,next)=>{
-    const category = await Category.findById(request.params.id);
+exports.getCategory =async(request,response,next)=>{
+    try{
+        const category = await Category.findById(request.params.id);
         if(!category){
             // response.status(404).json({message:"no category by this id"});
-            return next(new ApiError("no category by this id",404));
+            throw new Error("category id is invalid")
         }
         response.status(200).json({
             data:{
                 category
             }
         })
-});
-
-exports.updateCategory = asyncHandler(async(request,response,next)=>{
-    const {name} = request.body;
-    const category = await Category.findByIdAndUpdate(request.params.id,{name,slug:slugify(name)},{new:true})
-    if(!category){
-        // response.status(404).json({message:"no category by this id"});
-        return next(new ApiError("no category by this id",404));
+    }catch(err){
+        next(err);
     }
-    response.status(200).json({
-        data:{
-            category
+};
+
+exports.updateCategory = async(request,response,next)=>{
+    try{
+        const {name} = request.body;
+        const category = await Category.findByIdAndUpdate(request.params.id,{name,slug:slugify(name)},{new:true})
+        if(!category){
+            // response.status(404).json({message:"no category by this id"});
+            throw new Error("category id is invalid")
         }
-    })
-});
-
-exports.deleteCategory = asyncHandler(async(request,response,next)=>{
-    const category = await Category.findByIdAndDelete(request.params.id);
-    if(!category){
-        return next(new ApiError("no category by this id",404));
+        response.status(200).json({
+            data:{
+                category
+            }
+        })
+    }catch(err){
+        next(err);
     }
-    response.status(200).json({
-        message:"deleted"
-    })
-})
+    
+};
+
+exports.deleteCategory = async(request,response,next)=>{
+    try{
+        const category = await Category.findByIdAndDelete(request.params.id);
+        if(!category){
+            throw new Error("category id is invalid")
+        }
+        response.status(200).json({
+            message:"deleted"
+        })
+    }catch(err){
+        next(err);
+    }
+};
