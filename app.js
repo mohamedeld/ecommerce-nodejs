@@ -7,6 +7,7 @@ const globalError = require("./middleware/errorMW");
 const databaseConnection = require("./config/database");
 const categoryRouter = require("./routes/categoryRoutes");
 const subCategoryRouter =require("./routes/subCategoryRouter");
+const brandRouter = require("./routes/brandRoutes");
 
 const app = express();
 app.use(express.json());
@@ -26,6 +27,7 @@ const server = app.listen(PORT,()=>{
 
 app.use("/category",categoryRouter);
 app.use("/subCategory",subCategoryRouter);
+app.use("/brand",brandRouter);
 
 app.all("*",(request,response,next)=>{
     next(new ApiError(`cant find this route ${request.originalUrl}`,400));
