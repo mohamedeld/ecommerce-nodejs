@@ -1,5 +1,7 @@
 const fs = require('fs');
-// require('colors');
+
+require('colors');
+
 const dotenv = require('dotenv');
 const Product = require('../../Model/productModel');
 const dbConnection = require('../../config/database');
@@ -10,7 +12,7 @@ dotenv.config({ path: '../../config.env' });
 dbConnection();
 
 // Read data
-const products = JSON.parse(fs.readFileSync('./products.json'));
+const products = JSON.parse(fs.readFileSync('./product.json'));
 
 
 // Insert data into DB
@@ -42,3 +44,4 @@ if (process.argv[2] === '-i') {
 } else if (process.argv[2] === '-d') {
   destroyData();
 }
+

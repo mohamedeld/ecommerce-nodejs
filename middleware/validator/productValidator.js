@@ -1,5 +1,8 @@
 const {query,param,body} = require("express-validator");
 
+const Category = require("../../Model/categoryModel");
+const subCategory = require("../../Model/subCategoryModel");
+
 exports.addProductValidator = [
     body("title").notEmpty().withMessage("should be string"),
     body("description").notEmpty().withMessage("should be string").isLength({max:2000}).withMessage("too long description"),
@@ -15,8 +18,26 @@ exports.addProductValidator = [
     body("colors").optional().isArray().withMessage("color should be in array of string"),
     body("imageCover").notEmpty().withMessage("image should be string"),
     body("images").optional().isArray().withMessage("color should be in array of string"),
-    body("category").optional().isMongoId().withMessage("should be mongodb"),
-    body("subcategory").optional().isMongoId().withMessage("should be mongodb"),
+    body("category").optional().isMongoId().withMessage("should be mongodb").custom((categoryId)=> Category.findById(categoryId).then((category)=>{
+        if(!category){
+            return Promise.reject(new Error(`category id ${categoryId} is already in use`))
+        }
+    })),
+    body("subcategory").optional().isMongoId().withMessage("should be mongodb").custom((subcategoryId)=> subCategory.find({_id:{$exists:true,$in:subcategoryId}}).then((result)=>{
+        if(result.length <1 || result.length !== subcategoryId.length){
+            return Promise.reject(new Error("result array is empty"))
+        }
+    })).custom((val,{req})=> subCategory.find({category:req.body.category}).then((subcategories)=>{
+        const subCategoriesInDB = [];
+        subcategories.forEach(subcategory=>{
+            subCategoriesInDB.push(subcategory._id.toString());
+        })
+        const checker = (target,arr)=> target.every(v=> arr.includes(v));
+
+        if(!checker(val,subCategoriesInDB)){
+            return Promise.reject(new Error(`this sub cateogry is not found`));
+        }
+    })),
     body("brand").optional().isMongoId().withMessage("should be mongodb")
 ];
 
