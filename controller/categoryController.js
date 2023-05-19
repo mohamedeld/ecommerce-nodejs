@@ -1,87 +1,55 @@
+const multer = require("multer");
+const { v4: uuidv4 } = require("uuid");
+const sharp = require("sharp");
+const { uploadSingleImage } = require("../middleware/uploadImageMW");
+// const storage = multer.diskStorage({
+//     destination:function(req,file,cb){
+//         cb(null,"uploads/categories")
+//     },
+//     filename:function(req,file,cb){
+//         const ext = file.mimetype.split('/')[1];
+//         const filename = `category-${uuidv4()}-${Date.now()}.${ext}`;
+//         cb(null,filename);
+//     }
+// })
+// const storage = multer.memoryStorage();
 
-const slugify = require("slugify");
+// const multerFilter = function (req, file, cb) {
+//   if (file.mimetype.startsWith("image")) {
+//     cb(null, true);
+//   } else {
+//     cb(new Error("this file is not image"), false);
+//   }
+// };
+// const upload = multer({ storage, fileFilter: multerFilter });
+
+exports.uploadCategoryImage = uploadSingleImage("image");
+
+exports.resizeImage = async (request, response, next) => {
+  try {
+    const filename = `category-${uuidv4()}-${Date.now()}.jpeg`;
+    await sharp(request.file.buffer)
+      .resize(600, 600)
+      .toFormat("jpeg")
+      .jpeg({
+        quality: 90,
+      })
+      .toFile(`uploads/categories/${filename}`);
+    request.body.image = filename;
+    next();
+  } catch (err) {
+    next(err);
+  }
+};
 const Category = require("../Model/categoryModel");
 
+const factory = require("./handlerFactory");
 
+exports.createCategory = factory.createOne(Category);
+exports.getCategories = factory.findAll(Category);
 
-exports.createCategory =async(request,response,next)=>{
-    try{
-        const {name} = request.body;
-        const category = await Category.create({name,slug:slugify(name)});
-        response.status(200).json({
-            message:"success",
-            data:{
-                category
-            }
-        })
-    }catch(err){
-        next(err);
-    }
-};
-exports.getCategories = async(request,response,next)=>{
-    try{
-        const page=request.query.page * 1 || 1;
-        const limit = request.query.limit * 1 || 5;
-        const skip = (page - 1)*limit;
-        const categories = await Category.find({}).skip(skip).limit(limit);
-        response.status(200).json({
-            results:categories.length,
-            page,
-            data:{
-                categories
-            }
-        })
-    }catch(err){
-        next(err);
-    }
-};
+exports.getCategory = factory.findOne(Category);
 
-exports.getCategory =async(request,response,next)=>{
-    try{
-        const category = await Category.findById(request.params.id);
-        if(!category){
-            // response.status(404).json({message:"no category by this id"});
-            throw new Error("category id is invalid")
-        }
-        response.status(200).json({
-            data:{
-                category
-            }
-        })
-    }catch(err){
-        next(err);
-    }
-};
+exports.updateCategory = factory.updateOne(Category);
 
-exports.updateCategory = async(request,response,next)=>{
-    try{
-        const {name} = request.body;
-        const category = await Category.findByIdAndUpdate(request.params.id,{name,slug:slugify(name)},{new:true})
-        if(!category){
-            // response.status(404).json({message:"no category by this id"});
-            throw new Error("category id is invalid")
-        }
-        response.status(200).json({
-            data:{
-                category
-            }
-        })
-    }catch(err){
-        next(err);
-    }
-    
-};
-
-exports.deleteCategory = async(request,response,next)=>{
-    try{
-        const category = await Category.findByIdAndDelete(request.params.id);
-        if(!category){
-            throw new Error("category id is invalid")
-        }
-        response.status(200).json({
-            message:"deleted"
-        })
-    }catch(err){
-        next(err);
-    }
-};
+exports.deleteCategory = factory.deleteOne(Category);

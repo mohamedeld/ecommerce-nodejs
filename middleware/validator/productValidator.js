@@ -1,10 +1,13 @@
 const {query,param,body} = require("express-validator");
-
+const slugify = require("slugify");
 const Category = require("../../Model/categoryModel");
 const subCategory = require("../../Model/subCategoryModel");
 
 exports.addProductValidator = [
-    body("title").notEmpty().withMessage("should be string"),
+    body("title").notEmpty().withMessage("category name should be string").custom((val,{req})=>{
+        req.body.slug = slugify(val);
+        return true
+    }),
     body("description").notEmpty().withMessage("should be string").isLength({max:2000}).withMessage("too long description"),
     body("quantity").notEmpty().withMessage("must be number"),
     body("sold").optional().isNumeric().withMessage("product sold must be number"),
@@ -45,7 +48,11 @@ exports.getProductValidator = [
     param("id").isMongoId().withMessage("id must be mongodb id")
 ];
 exports.updateProductValidator = [
-    param("id").isMongoId().withMessage("id must be mongodb id")
+    param("id").isMongoId().withMessage("id must be mongodb id"),
+    body("title").custom((val,{req})=>{
+        req.body.slug = slugify(val);
+        return true;
+    })
 ];
 exports.deleteProductValidator = [
     param("id").isMongoId().withMessage("id must be mongodb id")
