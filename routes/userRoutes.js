@@ -4,6 +4,7 @@ const {
   getUserValidator,
   updateUserValidator,
   deleteUserValidator,
+  changeUserPasswordValidator,
 } = require("../middleware/validator/userValidtor");
 const checkValidator = require("../middleware/checkValidator");
 
@@ -33,5 +34,11 @@ router
     userController.updateUser
   )
   .delete(deleteUserValidator, checkValidator, userController.deleteUser);
-
+router
+  .route("/changePassword/:id")
+  .put(
+    changeUserPasswordValidator,
+    checkValidator,
+    userController.changeUserPassword
+  );
 module.exports = router;
