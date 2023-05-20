@@ -14,7 +14,7 @@ module.exports.addUserValidator = [
     .notEmpty()
     .withMessage("please enter your email")
     .isEmail()
-    .withMessage("email should have @")
+    .withMessage(" invalid email ")
     .custom((val) =>
       User.findOne({ email: val }).then((user) => {
         if (user) {
@@ -22,8 +22,25 @@ module.exports.addUserValidator = [
         }
       })
     ),
-  body("password").notEmpty().withMessage("please enter your password"),
-  body("role").notEmpty().withMessage("please enter your role"),
+  body("password")
+    .isStrongPassword()
+    .withMessage("please enter your strong password")
+    .isLength({ min: 6 })
+    .withMessage("your password should greater than 6")
+    .custom((password, { req }) => {
+      if (password !== req.body.confirmPassword) {
+        throw new Error("password confirm is not equal");
+      }
+      return true;
+    }),
+  body("confirmPassword")
+    .isStrongPassword()
+    .withMessage("please enter your confirm password correctly "),
+  body("role")
+    .notEmpty()
+    .withMessage("please enter your role")
+    .isIn(["user", "admin"])
+    .withMessage("Role should be either 'user' or 'admin'"),
   body("phone")
     .optional()
     .isMobilePhone("ar-EG")

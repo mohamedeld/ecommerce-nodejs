@@ -3,11 +3,17 @@ const sharp = require("sharp");
 const { uploadSingleImage } = require("../middleware/uploadImageMW");
 const User = require("../Model/userModel");
 
-const factory = require("./handlerFactory");
+const {
+  createOne,
+  findAll,
+  findOne,
+  updateOne,
+  deleteOne,
+} = require("./handlerFactory");
 
-exports.uploadBrandImage = uploadSingleImage("imgProfile");
+exports.uploadUserImage = uploadSingleImage("imgProfile");
 
-exports.resizeImage = async (request, response, next) => {
+exports.resizeUserImage = async (request, response, next) => {
   try {
     const filename = `users-${uuidv4()}-${Date.now()}.jpeg`;
     await sharp(request.file.buffer)
@@ -22,11 +28,11 @@ exports.resizeImage = async (request, response, next) => {
   }
 };
 
-exports.createBrand = factory.createOne(User);
-exports.getAllBrands = factory.findAll(User);
+exports.addUser = createOne(User);
+exports.getUsers = findAll(User);
 
-exports.getBrand = factory.findOne(User);
+exports.getUser = findOne(User);
 
-exports.updateBrand = factory.updateOne(User);
+exports.updateUser = updateOne(User);
 
-exports.deleteBrand = factory.deleteOne(User);
+exports.deleteUser = deleteOne(User);
