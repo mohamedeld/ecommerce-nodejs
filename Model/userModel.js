@@ -1,5 +1,6 @@
 const mongoose = require("mongoose");
 const bcrypt = require("bcrypt");
+const jwt = require("jsonwebtoken");
 const userSchema = new mongoose.Schema(
   {
     name: {
@@ -24,9 +25,10 @@ const userSchema = new mongoose.Schema(
     imgProfile: String,
     phone: String,
     role: {
-      type: String,
-      enum: ["user", "admin"],
-      default: "user",
+      // type: String,
+      // enum: ["user", "admin"],
+      // default: "user",
+      type: Boolean,
     },
     active: {
       type: Boolean,
@@ -56,5 +58,12 @@ userSchema.pre("save", async function (next) {
   } catch (err) {
     next(err);
   }
+});
+userSchema.method("genAuthToken", () => {
+  const token = jwt.sign(
+    { userId: this._id, adminRole: this.role },
+    process.env.SECRET_KEY
+  );
+  return token;
 });
 module.exports = mongoose.model("User", userSchema);

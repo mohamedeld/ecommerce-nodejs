@@ -1,7 +1,7 @@
 const { param, body } = require("express-validator");
 const slugify = require("slugify");
-const User = require("../../Model/userModel");
 const bcrypt = require("bcrypt");
+const User = require("../../Model/userModel");
 
 module.exports.addUserValidator = [
   body("name")

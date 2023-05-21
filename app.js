@@ -10,6 +10,7 @@ const subCategoryRouter = require("./routes/subCategoryRouter");
 const brandRouter = require("./routes/brandRoutes");
 const productRouter = require("./routes/productRoutes");
 const userRouter = require("./routes/userRoutes");
+const authRouter = require("./routes/authRoutes");
 const app = express();
 app.use(express.json());
 dotenv.config({ path: "./config.env" });
@@ -25,6 +26,7 @@ const PORT = process.env.PORT || 8000;
 const server = app.listen(PORT, () => {
   console.log("listening");
 });
+app.use("/auth", authRouter);
 app.use("/users", userRouter);
 app.use("/category", categoryRouter);
 app.use("/subCategory", subCategoryRouter);
