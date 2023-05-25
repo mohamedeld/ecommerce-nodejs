@@ -64,6 +64,7 @@ exports.changeUserPassword = async (request, response, next) => {
       request.params.id,
       {
         password: await bcrypt.hash(request.body.password, 10),
+        passwordChangeAt: Date.now(),
       },
       { new: true }
     );
