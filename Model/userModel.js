@@ -27,10 +27,10 @@ const userSchema = new mongoose.Schema(
     imgProfile: String,
     phone: String,
     role: {
-      // type: String,
-      // enum: ["user", "admin"],
-      // default: "user",
-      type: Boolean,
+      type: String,
+      enum: ["user", "manager","admin"],
+      default: "user",
+     
     },
     active: {
       type: Boolean,
@@ -61,11 +61,5 @@ userSchema.pre("save", async function (next) {
     next(err);
   }
 });
-userSchema.method("genAuthToken", () => {
-  const token = jwt.sign(
-    { userId: this._id, adminRole: this.role },
-    process.env.SECRET_KEY
-  );
-  return token;
-});
+
 module.exports = mongoose.model("User", userSchema);

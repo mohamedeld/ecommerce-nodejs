@@ -38,18 +38,7 @@ module.exports.signUpValidator = [
     .isStrongPassword()
     .withMessage("please enter your confirm password correctly "),
 ];
-module.exports.signInValidator = [
-  body("email")
-    .notEmpty()
-    .withMessage("please enter your email")
-    .isEmail()
-    .withMessage(" invalid email "),
-  body("password")
-    .isStrongPassword()
-    .withMessage("please enter your strong password")
-    .isLength({ min: 6 })
-    .withMessage("your password should greater than 6"),
-];
+
 // module.exports.signUpValidator = [
 //   body("name")
 //     .notEmpty()

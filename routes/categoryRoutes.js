@@ -2,6 +2,7 @@ const express = require("express");
 
 const router = express.Router();
 const categoryController = require("../controller/categoryController");
+const authController = require("../controller/authController");
 const {
   addCategoryValidator,
   getCategoryValidator,
@@ -15,6 +16,7 @@ router
   .route("/")
   .get(categoryController.getCategories)
   .post(
+    authController.protect,
     categoryController.uploadCategoryImage,
     categoryController.resizeImage,
     addCategoryValidator,
@@ -26,6 +28,7 @@ router
   .route("/:id")
   .get(getCategoryValidator, checkValidator, categoryController.getCategory)
   .patch(
+    authController.protect,
     categoryController.uploadCategoryImage,
     categoryController.resizeImage,
     updateCategoryValidator,
@@ -33,6 +36,7 @@ router
     categoryController.updateCategory
   )
   .delete(
+    authController.protect,
     deleteCategoryValidator,
     checkValidator,
     categoryController.deleteCategory

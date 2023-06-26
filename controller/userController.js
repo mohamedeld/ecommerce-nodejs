@@ -1,8 +1,9 @@
 const { v4: uuidv4 } = require("uuid");
 const sharp = require("sharp");
+const bcrypt = require("bcrypt");
 const { uploadSingleImage } = require("../middleware/uploadImageMW");
 const User = require("../Model/userModel");
-const bcrypt = require("bcrypt");
+
 const {
   createOne,
   findAll,

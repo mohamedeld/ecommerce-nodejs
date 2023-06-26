@@ -11,6 +11,8 @@ const brandRouter = require("./routes/brandRoutes");
 const productRouter = require("./routes/productRoutes");
 const userRouter = require("./routes/userRoutes");
 const authRouter = require("./routes/authRoutes");
+
+
 const app = express();
 app.use(express.json());
 dotenv.config({ path: "./config.env" });

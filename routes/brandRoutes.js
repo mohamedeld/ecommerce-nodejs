@@ -7,13 +7,15 @@ const {
 } = require("../middleware/validator/brandValidator");
 const checkValidator = require("../middleware/checkValidator");
 const brandController = require("../controller/brandController");
+const authController = require("../controller/authController");
 
 const router = express.Router();
 
 router
   .route("/")
-  .get(brandController.getAllBrands)
+  .get(authController.protect, brandController.getAllBrands)
   .post(
+    authController.protect,
     brandController.uploadBrandImage,
     brandController.resizeImage,
     addBrandValidator,
@@ -25,12 +27,18 @@ router
   .route("/:id")
   .get(getBrandValidator, checkValidator, brandController.getBrand)
   .patch(
+    authController.protect,
     brandController.uploadBrandImage,
     brandController.resizeImage,
     updateBrandValidator,
     checkValidator,
     brandController.updateBrand
   )
-  .delete(deleteBrandValidator, checkValidator, brandController.deleteBrand);
+  .delete(
+    authController.protect,
+    deleteBrandValidator,
+    checkValidator,
+    brandController.deleteBrand
+  );
 
 module.exports = router;
