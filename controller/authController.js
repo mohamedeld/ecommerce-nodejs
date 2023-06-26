@@ -1,5 +1,5 @@
 const jwt = require("jsonwebtoken");
-
+const crypto = require("crypto");
 const bcrypt = require("bcrypt");
 const User = require("../Model/userModel");
 
@@ -72,15 +72,61 @@ exports.protect = async (request,response,next)=>{
       return response.status(401).json({ message: "access denied" });
     }
     const decoded = jwt.verify(token, process.env.JWT_SECRET_KEY);
-    if(decoded.userRole !== "admin"){
-      response.status(401).json({message:"access denied is admin role"});
+    if(!["admin", "manager"].includes(decoded.userRole)){
+      response.status(403).json({ message: "access denied" });
     }
-    const currentUser = User.findById(decoded.userId);
+    const currentUser = await User.findById(decoded.userId);
     if(!currentUser){
       response.status(401).json({ message: "the user that belong to this token does no longer exist" });
     }
+    if (currentUser.passwordChangeAt) {
+      const convertDateToTimeStamp = parseInt(currentUser.passwordChangeAt.getTime() / 1000,10);
+      if(convertDateToTimeStamp> decoded.iat){
+        response
+          .status(401)
+          .json({
+            message: "the user change his password please login again",
+          });
+      }
+    }
+    request.user = currentUser;
     next();
   }catch(err){
     next(err);
+  }
+};
+/*
+exports.allowedTo =
+  (...roles) =>
+  async (request, response, next) => {
+    try {
+      if(!roles.included(request.user.role)){
+        response.status(403).json({
+          message:"access denied"
+        })
+      }
+      next();
+    } catch (err) {
+      next(err);
+    }
+  };
+  **/
+
+exports.forgetPassword = async(request,response,next)=>{
+  try{
+    const user = await User.findOne({email:request.body.email});
+    if(!user){
+      response.status(404).json({message:"this email is not exist"})
+    }
+    const resetCode = Math.floor(100000 + Math.random()* 900000).toString();
+    const hashedResetCode = crypto
+      .createHash("sha256")
+      .update(resetCode)
+      .digest("hex");
+      console.log(resetCode);
+      console.log(hashedResetCode);
+      next()
+  }catch(err){
+    next(err)
   }
 }

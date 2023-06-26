@@ -7,15 +7,16 @@ const {
   changeUserPasswordValidator,
 } = require("../middleware/validator/userValidtor");
 const checkValidator = require("../middleware/checkValidator");
-
+const authController = require("../controller/authController");
 const userController = require("../controller/userController");
 
 const router = express.Router();
 
 router
   .route("/")
-  .get(userController.getUsers)
+  .get(authController.protect, userController.getUsers)
   .post(
+    authController.protect,
     userController.uploadUserImage,
     userController.resizeUserImage,
     addUserValidator,
@@ -25,18 +26,30 @@ router
 
 router
   .route("/:id")
-  .get(getUserValidator, checkValidator, userController.getUser)
+  .get(
+    authController.protect,
+    getUserValidator,
+    checkValidator,
+    userController.getUser
+  )
   .patch(
+    authController.protect,
     userController.uploadUserImage,
     userController.resizeUserImage,
     updateUserValidator,
     checkValidator,
     userController.updateUser
   )
-  .delete(deleteUserValidator, checkValidator, userController.deleteUser);
+  .delete(
+    authController.protect,
+    deleteUserValidator,
+    checkValidator,
+    userController.deleteUser
+  );
 router
   .route("/changePassword/:id")
   .put(
+    authController.protect,
     changeUserPasswordValidator,
     checkValidator,
     userController.changeUserPassword

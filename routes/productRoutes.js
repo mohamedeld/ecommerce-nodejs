@@ -1,5 +1,5 @@
 const express = require("express");
-
+const authController = require("../controller/authController");
 const router = express.Router();
 const checkValidator = require("../middleware/checkValidator");
 const {
@@ -14,6 +14,7 @@ router
   .route("/")
   .get(productController.getAllProducts)
   .post(
+    authController.protect,
     addProductValidator,
     checkValidator,
     productController.uploadProductImages,
@@ -25,6 +26,7 @@ router
   .route("/:id")
   .get(getProductValidator, checkValidator, productController.getProduct)
   .patch(
+    authController.protect,
     productController.uploadProductImages,
     productController.resizeProductImage,
     updateProductValidator,
@@ -32,6 +34,7 @@ router
     productController.updateProduct
   )
   .delete(
+    authController.protect,
     deleteProductValidator,
     checkValidator,
     productController.deleteProduct

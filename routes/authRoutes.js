@@ -15,5 +15,9 @@ router
 router
   .route("/login")
   .post(signInValidator, checkValidator, authController.login);
+  
+router
+  .route("/forgetpassword")
+  .post(checkValidator, authController.forgetPassword);
 
 module.exports = router;

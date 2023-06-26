@@ -24,6 +24,9 @@ const userSchema = new mongoose.Schema(
       required: [true, "please enter your password"],
       minLength: [6, "password should be greater than 6"],
     },
+    passwordResetCode:String,
+    passwordResetExpires:Date,
+    passwordResetVerified:Boolean,
     imgProfile: String,
     phone: String,
     role: {
