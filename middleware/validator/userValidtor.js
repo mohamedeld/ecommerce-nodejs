@@ -122,7 +122,32 @@ module.exports.changeUserPasswordValidator = [
       return true;
     }),
 ];
-
+module.exports.updateLoggedUserDataWithoutPassword = [
+  body("name")
+    .optional()
+    .isEmpty()
+    .withMessage("please enter your name")
+    .custom((val, { req }) => {
+      req.body.slug = slugify(val);
+      return true;
+    }),
+  body("email")
+    .isEmpty()
+    .withMessage("please enter your email")
+    .isEmail()
+    .withMessage("please enter your email ")
+    .custom((val) =>
+      User.findOne({ email: val }).then((user) => {
+        if (user) {
+          throw new Error("invalid id ");
+        }
+      })
+    ),
+  body("phone")
+    .optional()
+    .isMobilePhone()
+    .withMessage("please enter your phone"),
+];
 module.exports.deleteUserValidator = [
   param("id").isMongoId().withMessage("user id should be mongo id"),
 ];

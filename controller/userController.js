@@ -104,6 +104,42 @@ exports.updateLoggedUserPassword = async(request,response,next)=>{
         expiresIn: process.env.EXPIRES_TIME,
       }
     );
+    response.status(200).json({
+      data: {
+        user,
+      },
+      token,
+    });
+  }catch(err){
+    next(err);
+  }
+}
+
+exports.updateLoggedUserDataWithoutPassword = async(request,response,next)=>{
+  try{
+    const user= await User.findByIdAndUpdate(request.user._id,{
+      name:request.body.name,
+      phone:request.body.phone,
+      email:request.body.email
+    },{new:true});
+    response.status(200).json({
+      data:{
+        user
+      }
+    })
+  }catch(err){
+    next(err);
+  }
+};
+
+exports.deActivateUser = async (request,response,next)=>{
+  try{
+    await User.findByIdAndUpdate(request.user._id,{
+      active:false
+    },{new:true})
+    response.status(204).json({
+      status:"success"
+    })
   }catch(err){
     next(err);
   }

@@ -5,6 +5,7 @@ const {
   updateUserValidator,
   deleteUserValidator,
   changeUserPasswordValidator,
+  updateLoggedUserDataWithoutPassword,
 } = require("../middleware/validator/userValidtor");
 const checkValidator = require("../middleware/checkValidator");
 const authController = require("../controller/authController");
@@ -57,4 +58,15 @@ router
 router
   .route("/getMe")
   .get(userController.getLoggedUserData,authController.protect, userController.getUser);
+
+router
+  .route("/changeMyPassword")
+  .put(authController.protect, userController.updateLoggedUserPassword);
+
+router
+  .route("/updateMe")
+  .put(authController.protect,
+    updateLoggedUserDataWithoutPassword,userController.updateLoggedUserDataWithoutPassword
+  );
+router.route("/deactivate").delete(userController.deActivateUser);
 module.exports = router;

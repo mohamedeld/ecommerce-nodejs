@@ -11,7 +11,7 @@ const brandRouter = require("./routes/brandRoutes");
 const productRouter = require("./routes/productRoutes");
 const userRouter = require("./routes/userRoutes");
 const authRouter = require("./routes/authRoutes");
-
+const reviewRouter = require("./routes/reviewRoutes");
 
 const app = express();
 app.use(express.json());
@@ -34,6 +34,7 @@ app.use("/category", categoryRouter);
 app.use("/subCategory", subCategoryRouter);
 app.use("/brand", brandRouter);
 app.use("/products", productRouter);
+app.use("/review",reviewRouter);
 
 app.use((request, response, next) => {
   response.status(404).json({

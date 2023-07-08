@@ -80,7 +80,7 @@ exports.protect = async (request,response,next)=>{
       return response.status(401).json({ message: "access denied" });
     }
     const decoded = jwt.verify(token, process.env.JWT_SECRET_KEY);
-    if(decoded.userRole === 'admin'){
+    if (decoded.userRole !== "admin" && decoded.userRole !== "manager") {
       response.status(403).json({ message: "access denied" });
     }
     const currentUser = await User.findById(decoded.userId);
