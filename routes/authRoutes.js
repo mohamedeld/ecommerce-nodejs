@@ -18,6 +18,8 @@ router
   
 router
   .route("/forgetpassword")
-  .post(checkValidator, authController.forgetPassword);
+  .post(authController.forgetPassword);
 
+router.route("/verifyResetCode").post(authController.verifyPasswordResetCode);
+router.route("/resetPassword").put(authController.resetPassword);
 module.exports = router;

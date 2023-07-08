@@ -1,5 +1,5 @@
 const {query,param,body}  = require("express-validator");
-
+const User = require("../../Model/userModel");
 module.exports.signInValidator = [
   body("email")
     .notEmpty()

@@ -1,6 +1,7 @@
 const { v4: uuidv4 } = require("uuid");
 const sharp = require("sharp");
 const bcrypt = require("bcrypt");
+const jwt = require("jsonwebtoken");
 const { uploadSingleImage } = require("../middleware/uploadImageMW");
 const User = require("../Model/userModel");
 
@@ -80,3 +81,30 @@ exports.changeUserPassword = async (request, response, next) => {
 };
 
 exports.deleteUser = deleteOne(User);
+
+exports.getLoggedUserData = async (request, response, next)=>{
+  try{  
+    request.params.id = request.user._id;
+    next();
+  }catch(err){
+    next(err);
+  }
+};
+
+exports.updateLoggedUserPassword = async(request,response,next)=>{
+  try{
+    const user = await User.findByIdAndUpdate(request.user._id, {
+      password: await bcrypt.hash(request.body.password),
+      passwordChangeAt: Date.now(),
+    },{new:true});
+    const token = jwt.sign(
+      { userId: user._id, userRole: user.role },
+      process.env.JWT_SECRET_KEY,
+      {
+        expiresIn: process.env.EXPIRES_TIME,
+      }
+    );
+  }catch(err){
+    next(err);
+  }
+}

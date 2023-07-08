@@ -54,4 +54,7 @@ router
     checkValidator,
     userController.changeUserPassword
   );
+router
+  .route("/getMe")
+  .get(userController.getLoggedUserData,authController.protect, userController.getUser);
 module.exports = router;
