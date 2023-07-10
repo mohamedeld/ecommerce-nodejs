@@ -1,7 +1,8 @@
 const {query,param,body} = require("express-validator");
-
+const Review = require("../../Model/reviewModel");
 module.exports.createReviewValidator = [
   body("title")
+    .optional()
     .notEmpty()
     .withMessage("please enter your title")
     .isAlpha()
@@ -9,7 +10,7 @@ module.exports.createReviewValidator = [
   body("ratings")
     .notEmpty()
     .withMessage("please enter your rating")
-    .isNumeric()
+    .isFloat({min:1,max:5})
     .withMessage("rating should be number"),
   body("user")
     .notEmpty()
@@ -20,7 +21,13 @@ module.exports.createReviewValidator = [
     .notEmpty()
     .withMessage("please enter your title")
     .isMongoId()
-    .withMessage("product should be mongo id"),
+    .withMessage("product should be mongo id").custom((val,{req})=>{
+        return Review.findOne({user:req.user._id,product:req.body.product}).then((review)=>{
+            if(review){
+                return Promise.reject(new Error("you already created a review before"))
+            }
+        })
+    }),
 ];
 
 module.exports.getOneReviewValidator = [
@@ -32,37 +39,40 @@ module.exports.getOneReviewValidator = [
 ];
 
 module.exports.updateReviewValidator = [
-  body("title")
-    .optional()
-    .notEmpty()
-    .withMessage("please enter your title")
-    .isAlpha()
-    .withMessage("title should be string"),
-  body("ratings")
-    .optional()
-    .notEmpty()
-    .withMessage("please enter your rating")
-    .isNumeric()
-    .withMessage("rating should be number"),
-  body("user")
-    .optional()
-    .notEmpty()
-    .withMessage("please enter user id")
+  body("id")
     .isMongoId()
-    .withMessage("user should be mongo id"),
-  body("product")
-    .optional()
-    .notEmpty()
-    .withMessage("please enter your title")
-    .isMongoId()
-    .withMessage("product should be mongo id"),
+    .withMessage("review should be mongo id").custom((val,{req})=>{
+        return Review.findById(val).then((review)=>{
+            if(!review){
+                return Promise.reject(new Error("there are no review"))
+            }
+            if (review.user.toString() !== req.user._id.toString()) {
+              return Promise.reject(
+                new Error("you are not allowed to perform this action")
+              );
+            }
+        })
+    }),
 ];
 
 
 module.exports.deleteOneReviewValidator = [
   param("id")
-    .notEmpty()
-    .withMessage("please enter your review id")
     .isMongoId()
-    .withMessage("review should be mongo id"),
+    .withMessage("review should be mongo id").custom((val,{req})=>{
+        return Review.findById(val).then((review)=>{
+            if (!review) {
+              return Promise.reject(new Error("there are no review"));
+            }
+            if(req.user.role === "user"){
+                if (review.user.toString() !== req.user._id.toString()) {
+                  return Promise.reject(
+                    new Error("you are not allowed to perform this action")
+                  );
+                }
+            }
+            
+        })
+        return true;
+    }),
 ];

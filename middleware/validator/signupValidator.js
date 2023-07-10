@@ -24,19 +24,15 @@ module.exports.signUpValidator = [
       })
     ),
   body("password")
-    .isStrongPassword()
-    .withMessage("please enter your strong password")
-    .isLength({ min: 6 })
-    .withMessage("your password should greater than 6")
+    .notEmpty()
+    .withMessage("please enter your password")
     .custom((password, { req }) => {
       if (password !== req.body.confirmPassword) {
         throw new Error("password confirm is not equal");
       }
       return true;
     }),
-  body("confirmPassword")
-    .isStrongPassword()
-    .withMessage("please enter your confirm password correctly "),
+  body("confirmPassword").notEmpty().withMessage("please enter your confirm password"),
 ];
 
 // module.exports.signUpValidator = [

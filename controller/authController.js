@@ -3,6 +3,8 @@ const crypto = require("crypto");
 const bcrypt = require("bcrypt");
 const User = require("../Model/userModel");
 const sendEmail = require("../utils/sendEmail");
+const AppError = require("../utils/appError");
+const catchAsync = require("../utils/catchAsync");
 
 exports.signUp = async (request, response, next) => {
   try {
@@ -12,15 +14,16 @@ exports.signUp = async (request, response, next) => {
       password: request.body.password,
     });
     const token = jwt.sign(
-      { userId: user._id, userRole: user.role },
+      { userId: user._id },
       process.env.JWT_SECRET_KEY,
       {
         expiresIn: process.env.EXPIRES_TIME,
       }
     );
-    response.header("x-auth-token", token);
+    
 
     response.status(201).json({
+      status:"success",
       data: {
         user,
         token
@@ -31,61 +34,51 @@ exports.signUp = async (request, response, next) => {
   }
 };
 
-exports.login = async (request, response, next) => {
-  try {
-    const user = await User.findOne({ email: request.body.email });
-    console.log(request.body.email);
-    console.log(user);
-    if (!user) {
-      return response.status(401).json({message:"email was not found"})
-    }
-    
-    const validPassword = await bcrypt.compare(
-      request.body.password,
-      user.password
-    );
-    if (!validPassword) {
-      throw new Error("invalid password ");
-    }
-    const token =jwt.sign(
-      { userId: user._id, userRole: user.role },
-      process.env.JWT_SECRET_KEY,
-      {
-        expiresIn: process.env.EXPIRES_TIME,
-      }
-    );
-    if(!response.headersSent){
-      response.header("x-auth-token", token);
-      response.status(200).json({
-        message: "logged in successfully",
-        data: {
-          user,
-          token,
-        },
-      });
-    }
-    
-    return;
-  } catch (err) {
-    next(err);
+exports.loginUser = catchAsync(async (request, response, next) => {
+  const user = await User.findOne({ email: request.body.email });
+  console.log(user.email);
+  if (!user) {
+    return next(new AppError("invalid email please sign up", 401));
   }
-};
+
+  const validPassword = await bcrypt.compare(
+    request.body.password,
+    user.password
+  );
+  if (!validPassword) {
+    throw new Error("invalid password ");
+  }
+  const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET_KEY, {
+    expiresIn: process.env.EXPIRES_TIME,
+  });
+
+  response.status(200).json({
+    message: "logged in successfully",
+    data: {
+      user,
+      token,
+    },
+  });
+});
 
 
 exports.protect = async (request,response,next)=>{
   
   try{
-    const token = request.header("x-auth-token");
+    let token;
+    if(request.headers.authorization && request.headers.authorization.startsWith('Bearer')){
+      token = request.headers.authorization.split(' ')[1];
+    }
     if (!token) {
-      return response.status(401).json({ message: "access denied" });
+      throw new Error("access denied")
     }
     const decoded = jwt.verify(token, process.env.JWT_SECRET_KEY);
-    if (decoded.userRole !== "admin" && decoded.userRole !== "manager") {
-      response.status(403).json({ message: "access denied" });
-    }
+    
     const currentUser = await User.findById(decoded.userId);
     if(!currentUser){
-      response.status(401).json({ message: "the user that belong to this token does no longer exist" });
+      throw new Error(
+        "the user that belong to this token does no longer exist"
+      );
     }
     if (currentUser.passwordChangeAt) {
       const convertDateToTimeStamp = parseInt(currentUser.passwordChangeAt.getTime() / 1000,10);
@@ -103,7 +96,7 @@ exports.protect = async (request,response,next)=>{
     next(err);
   }
 };
-/*
+
 exports.allowedTo =
   (...roles) =>
   async (request, response, next) => {
@@ -118,13 +111,13 @@ exports.allowedTo =
       next(err);
     }
   };
-  **/
 
-exports.forgetPassword = async(request,response,next)=>{
-  try{
+
+exports.forgetPassword = catchAsync(async(request,response,next)=>{
+  
     const user = await User.findOne({email:request.body.email});
     if(!user){
-      response.status(404).json({message:"this email is not exist"})
+      throw new Error("this email is not exist");
     }
     const resetCode = Math.floor(100000 + Math.random()* 900000).toString();
     const hashedResetCode = crypto
@@ -134,33 +127,27 @@ exports.forgetPassword = async(request,response,next)=>{
       user.passwordResetCode = hashedResetCode;
       user.passwordResetExpires = Date.now() + 10 * 60 * 1000;
       user.passwordResetVerified =false;
-      await user.save();
+      await user.save({ validateBeforeSave: false });
       try{
         await sendEmail({
         email: user.email,
         subject: "your password reset code (valid for 10 minutes)",
-        message: `HI, ${user.name} your reset code ${resetCode}`,
+        text: `HI, ${user.name} your reset code ${resetCode}`
+      });
+      response.status(200).json({
+        status: "success",
+        message: "reset code is sent to email",
       });
       }catch(err){
         user.passwordResetCode = undefined;
         user.passwordResetExpires = undefined;
         user.passwordResetVerified = undefined;
 
-        await user.save();
-        response.status(500).json({
-          message:`there is an error in sending email ${err}`
-        })
+        await user.save({ validateBeforeSave: false });
+        return next(new AppError("an error through sending an email try again",500))
       }
       
-      response.status(200).json({
-        status:"success",
-        message:"reset code is sent to email"
-      })
-      next()
-  }catch(err){
-    next(err)
-  }
-};
+});
 
 exports.verifyPasswordResetCode = async(request,response,next)=>{
   try{
@@ -192,7 +179,8 @@ exports.resetPassword = async(request,response,next)=>{
     if (!user.passwordResetVerified) {
       throw new Error("reset code not verified");
     }
-    user.password = request.body.newPassword;
+    user.password = request.body.password;
+    user.confirmPassword= request.body.confirmPassword;
     user.passwordResetCode = undefined;
     user.passwordResetExpires = undefined;
     user.passwordResetVerified = undefined;

@@ -14,7 +14,7 @@ router
 
 router
   .route("/login")
-  .post(signInValidator, checkValidator, authController.login);
+  .post(signInValidator, checkValidator, authController.loginUser);
   
 router
   .route("/forgetpassword")

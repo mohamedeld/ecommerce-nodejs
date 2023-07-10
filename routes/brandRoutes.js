@@ -13,7 +13,11 @@ const router = express.Router();
 
 router
   .route("/")
-  .get(authController.protect, brandController.getAllBrands)
+  .get(
+    authController.protect,
+    authController.allowedTo("admin", "manager"),
+    brandController.getAllBrands
+  )
   .post(
     authController.protect,
     brandController.uploadBrandImage,

@@ -3,7 +3,8 @@ const dotenv = require("dotenv");
 const morgan = require("morgan");
 const bodyParser = require("body-parser");
 const path = require("path");
-// const globalError = require("./middleware/errorMW");
+
+const globalErrorHandler = require("./controller/errorController");
 const databaseConnection = require("./config/database");
 const categoryRouter = require("./routes/categoryRoutes");
 const subCategoryRouter = require("./routes/subCategoryRouter");
@@ -14,6 +15,12 @@ const authRouter = require("./routes/authRoutes");
 const reviewRouter = require("./routes/reviewRoutes");
 
 const app = express();
+process.on("uncaughtException", (err) => {
+  console.log("unhandler exception shutting down");
+  console.log(err.name, err.message);
+  process.exit(1);
+});
+
 app.use(express.json());
 dotenv.config({ path: "./config.env" });
 
@@ -28,8 +35,8 @@ const PORT = process.env.PORT || 8000;
 const server = app.listen(PORT, () => {
   console.log("listening");
 });
-app.use("/auth", authRouter);
 app.use("/users", userRouter);
+app.use("/auth", authRouter);
 app.use("/category", categoryRouter);
 app.use("/subCategory", subCategoryRouter);
 app.use("/brand", brandRouter);
@@ -42,11 +49,7 @@ app.use((request, response, next) => {
   });
 });
 
-app.use((error, request, response, next) => {
-  response.status(500).json({
-    message: error + "",
-  });
-});
+app.use(globalErrorHandler);
 
 // error outside express
 process.on("unhandledRejection", (error) => {
@@ -56,3 +59,4 @@ process.on("unhandledRejection", (error) => {
     process.exit(1);
   });
 });
+

@@ -6,5 +6,5 @@ module.exports.signInValidator = [
     .withMessage("please enter your email")
     .isEmail()
     .withMessage("some problem with email"),
-  body("password").notEmpty().withMessage("please enter your password").isStrongPassword().withMessage("please enter a strong password"),
+  body("password").notEmpty().withMessage("please enter your password")
 ];
