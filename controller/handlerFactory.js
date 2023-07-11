@@ -38,7 +38,7 @@ exports.findOne = (Model,populationOptions)=>catchAsync(async(request,response,n
 
 exports.updateOne = (Model) => async(request,response,next)=>{
     try{
-        const document = await Model.findByIdAndUpdate(request.param.id,request.body,{new:true});
+        const document = await Model.findByIdAndUpdate(request.params.id,request.body,{new:true});
         if(!document){
             throw new Error("invalid id")
         }

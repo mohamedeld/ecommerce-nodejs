@@ -3,18 +3,10 @@ const dotenv = require("dotenv");
 const morgan = require("morgan");
 const bodyParser = require("body-parser");
 const path = require("path");
+const mountRoutes = require("./routes");
 
 const globalErrorHandler = require("./controller/errorController");
 const databaseConnection = require("./config/database");
-const categoryRouter = require("./routes/categoryRoutes");
-const subCategoryRouter = require("./routes/subCategoryRouter");
-const brandRouter = require("./routes/brandRoutes");
-const productRouter = require("./routes/productRoutes");
-const userRouter = require("./routes/userRoutes");
-const authRouter = require("./routes/authRoutes");
-const reviewRouter = require("./routes/reviewRoutes");
-const wishListRouter = require("./routes/wishListRoute");
-const addressRouter = require('./routes/addressRoutes');
 
 const app = express();
 process.on("uncaughtException", (err) => {
@@ -31,21 +23,13 @@ app.use(express.static(path.join(__dirname, "uploads")));
 if (process.env.NODE_ENV === "development") {
   app.use(morgan("dev"));
 }
-
+mountRoutes(app);
 databaseConnection();
 const PORT = process.env.PORT || 8000;
 const server = app.listen(PORT, () => {
   console.log("listening");
 });
-app.use("/users", userRouter);
-app.use("/auth", authRouter);
-app.use("/category", categoryRouter);
-app.use("/subCategory", subCategoryRouter);
-app.use("/brand", brandRouter);
-app.use("/products", productRouter);
-app.use("/review",reviewRouter);
-app.use('/wishlist', wishListRouter);
-app.use('/address', addressRouter);
+
 
 app.use((request, response, next) => {
   response.status(404).json({
