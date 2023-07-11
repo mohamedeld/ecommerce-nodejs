@@ -24,6 +24,13 @@ router
     checkValidator,
     userController.addUser
   );
+router
+  .route('/getMe')
+  .get(
+    authController.protect,
+    userController.getLoggedUserData,
+    userController.getUser
+  );
 
 router
   .route("/:id")
@@ -55,9 +62,6 @@ router
     checkValidator,
     userController.changeUserPassword
   );
-router
-  .route("/getMe")
-  .get(userController.getLoggedUserData,authController.protect, userController.getUser);
 
 router
   .route("/changeMyPassword")

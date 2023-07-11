@@ -13,6 +13,8 @@ const productRouter = require("./routes/productRoutes");
 const userRouter = require("./routes/userRoutes");
 const authRouter = require("./routes/authRoutes");
 const reviewRouter = require("./routes/reviewRoutes");
+const wishListRouter = require("./routes/wishListRoute");
+const addressRouter = require('./routes/addressRoutes');
 
 const app = express();
 process.on("uncaughtException", (err) => {
@@ -42,6 +44,8 @@ app.use("/subCategory", subCategoryRouter);
 app.use("/brand", brandRouter);
 app.use("/products", productRouter);
 app.use("/review",reviewRouter);
+app.use('/wishlist', wishListRouter);
+app.use('/address', addressRouter);
 
 app.use((request, response, next) => {
   response.status(404).json({
