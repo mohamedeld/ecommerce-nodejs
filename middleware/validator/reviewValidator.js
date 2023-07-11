@@ -1,32 +1,33 @@
 const {query,param,body} = require("express-validator");
 const Review = require("../../Model/reviewModel");
 module.exports.createReviewValidator = [
-  body("title")
-    .optional()
+  body('title').optional().notEmpty().withMessage('please enter your title'),
+  body('ratings')
     .notEmpty()
-    .withMessage("please enter your title")
-    .isAlpha()
-    .withMessage("title should be string"),
-  body("ratings")
+    .withMessage('please enter your rating')
+    .isFloat({ min: 1, max: 5 })
+    .withMessage('rating should be number'),
+  body('user')
     .notEmpty()
-    .withMessage("please enter your rating")
-    .isFloat({min:1,max:5})
-    .withMessage("rating should be number"),
-  body("user")
-    .notEmpty()
-    .withMessage("please enter user id")
+    .withMessage('please enter user id')
     .isMongoId()
-    .withMessage("user should be mongo id"),
-  body("product")
+    .withMessage('user should be mongo id'),
+  body('product')
     .notEmpty()
-    .withMessage("please enter your title")
+    .withMessage('please enter your title')
     .isMongoId()
-    .withMessage("product should be mongo id").custom((val,{req})=>{
-        return Review.findOne({user:req.user._id,product:req.body.product}).then((review)=>{
-            if(review){
-                return Promise.reject(new Error("you already created a review before"))
-            }
-        })
+    .withMessage('product should be mongo id')
+    .custom((val, { req }) => {
+      return Review.findOne({
+        user: req.user._id,
+        product: req.body.product,
+      }).then((review) => {
+        if (review) {
+          return Promise.reject(
+            new Error('you already created a review before')
+          );
+        }
+      });
     }),
 ];
 
@@ -46,7 +47,7 @@ module.exports.updateReviewValidator = [
             if(!review){
                 return Promise.reject(new Error("there are no review"))
             }
-            if (review.user.toString() !== req.user._id.toString()) {
+            if (review.user._id.toString() !== req.user._id.toString()) {
               return Promise.reject(
                 new Error("you are not allowed to perform this action")
               );
@@ -65,7 +66,7 @@ module.exports.deleteOneReviewValidator = [
               return Promise.reject(new Error("there are no review"));
             }
             if(req.user.role === "user"){
-                if (review.user.toString() !== req.user._id.toString()) {
+                if (review.user._id.toString() !== req.user._id.toString()) {
                   return Promise.reject(
                     new Error("you are not allowed to perform this action")
                   );

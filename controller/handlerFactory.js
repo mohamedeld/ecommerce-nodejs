@@ -1,5 +1,6 @@
 const ApiFeature = require("../utils/apiFeature");
-
+const AppError = require("../utils/appError");
+const catchAsync = require("../utils/catchAsync");
 
 exports.deleteOne = (Model)=>async(request,response,next)=>{
         try{
@@ -7,6 +8,7 @@ exports.deleteOne = (Model)=>async(request,response,next)=>{
             if(!document){
                 throw new Error("invalid id");
             }
+            document.remove();
             response.status(200).json({
                 message:"deleted"
             })
@@ -15,21 +17,24 @@ exports.deleteOne = (Model)=>async(request,response,next)=>{
         }
     };
 
-exports.findOne = (Model)=>async(request,response,next)=>{
-    try{
-        const document = await Model.findById(request.params.id);
+exports.findOne = (Model,populationOptions)=>catchAsync(async(request,response,next)=>{
+    
+        // build query
+        let query = Model.findById(request.params.id);
+        if(populationOptions){
+            query = query.populate(populationOptions);
+        }
+        //execute query
+        const document = await query; 
         if(!document){
-            throw new Error("invalid id");
+            return next(new AppError("invalid id ",404))
         }
         response.status(200).json({
             data:{
                 document
             }
         })
-    }catch(err){
-        next(err);
-    }
-};
+    });
 
 exports.updateOne = (Model) => async(request,response,next)=>{
     try{
@@ -37,6 +42,7 @@ exports.updateOne = (Model) => async(request,response,next)=>{
         if(!document){
             throw new Error("invalid id")
         }
+        document.save();
         response.status(200).json({
             data:{
                 document

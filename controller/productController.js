@@ -46,7 +46,7 @@ exports.createProduct = factory.createOne(Product);
 
 exports.getAllProducts = factory.findAll(Product);
 
-exports.getProduct = factory.findOne(Product);
+exports.getProduct = factory.findOne(Product,'reviews');
 
 exports.updateProduct = factory.updateOne(Product);
 

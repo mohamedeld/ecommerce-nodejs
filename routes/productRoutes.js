@@ -1,7 +1,8 @@
 const express = require("express");
 const authController = require("../controller/authController");
-const router = express.Router();
+const reviewRoutes = require("./reviewRoutes");
 const checkValidator = require("../middleware/checkValidator");
+const router = express.Router();
 const {
   addProductValidator,
   getProductValidator,
@@ -21,6 +22,7 @@ router
     productController.resizeProductImage,
     productController.createProduct
   );
+router.use("/:productId/reviews",reviewRoutes);
 
 router
   .route("/:id")

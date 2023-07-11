@@ -65,8 +65,17 @@ const productSchema = new mongoose.Schema(
       default: 0,
     },
   },
-  { timestamps: true }
+  { timestamps: true,
+    toJSON:{virtuals:true},
+    toObject:{virtuals:true},
+   }
 );
+
+productSchema.virtual('reviews', {
+  ref: 'Review',
+  foreignField: 'product',
+  localField: '_id',
+});
 
 productSchema.pre(/^find/, function (next) {
   this.populate({
@@ -75,6 +84,7 @@ productSchema.pre(/^find/, function (next) {
   });
   next();
 });
+
 
 function setImageURL(doc) {
   if (doc.imageCover) {

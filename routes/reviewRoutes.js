@@ -1,17 +1,25 @@
 const express= require("express");
-const router = express.Router();
 const {createReviewValidator,getOneReviewValidator,updateReviewValidator,deleteOneReviewValidator} = require("../middleware/validator/reviewValidator");
 const reviewController = require("../controller/reviewController");
 const checkValidator = require("../middleware/checkValidator");
+const authController =require("../controller/authController");
+const router = express.Router({mergeParams:true});
 
 router
-  .route("/")
+  .route('/')
   .get(checkValidator, reviewController.getAllReviews)
-  .post(createReviewValidator, checkValidator,reviewController.createReview);
+  .post(
+    authController.protect,
+    authController.allowedTo('user'),
+    reviewController.setReviewToBody,
+    createReviewValidator,
+    checkValidator,
+    reviewController.createReview
+  );
 
   router
     .route("/:id")
-    .get(getOneReviewValidator, checkValidator, reviewController.getOneReview)
+    .get(getOneReviewValidator, checkValidator,reviewController.createFilterObj ,reviewController.getOneReview)
     .patch(updateReviewValidator, checkValidator, reviewController.updateReview)
     .delete(
       deleteOneReviewValidator,

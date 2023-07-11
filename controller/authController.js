@@ -62,9 +62,9 @@ exports.loginUser = catchAsync(async (request, response, next) => {
 });
 
 
-exports.protect = async (request,response,next)=>{
+exports.protect = catchAsync(async (request,response,next)=>{
   
-  try{
+  
     let token;
     if(request.headers.authorization && request.headers.authorization.startsWith('Bearer')){
       token = request.headers.authorization.split(' ')[1];
@@ -92,24 +92,16 @@ exports.protect = async (request,response,next)=>{
     }
     request.user = currentUser;
     next();
-  }catch(err){
-    next(err);
-  }
-};
+  
+});
 
-exports.allowedTo =
-  (...roles) =>
-  async (request, response, next) => {
-    try {
-      if(!roles.included(request.user.role)){
-        response.status(403).json({
-          message:"access denied"
-        })
+exports.allowedTo = (...roles) =>{
+  return (request, response, next) => {
+      if (!roles.includes(request.user.role)) {
+        return next(new Error("you don't have permission for this role", 403));
       }
       next();
-    } catch (err) {
-      next(err);
-    }
+    } 
   };
 
 
