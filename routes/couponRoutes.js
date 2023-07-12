@@ -5,12 +5,15 @@ const checkValidator = require("../middleware/checkValidator");
 const authController = require("../controller/authController");
 const router = express.Router();
 
-router.use(authController.protect, authController.allowedTo('admin'));
+router.use(authController.protect);
 router
   .route('/')
-  .get(couponController.getAllCoupons)
+  .get(
+    authController.allowedTo('user', 'admin'),
+    couponController.getAllCoupons
+  )
   .post(
-   
+    authController.allowedTo('admin'),
     createCouponValidator,
     checkValidator,
     couponController.createCoupon
@@ -19,16 +22,19 @@ router
 router
   .route('/:id')
   .get(
+     authController.allowedTo('user','admin'),
     getCouponValidator,
     checkValidator,
     couponController.getCoupon
   )
   .patch(
+     authController.allowedTo('admin'),
     updateCouponValidator,
     checkValidator,
     couponController.updateCoupon
   )
   .delete(
+     authController.allowedTo('admin'),
     deleteCouponValidator,
     checkValidator,
     couponController.deleteCoupon

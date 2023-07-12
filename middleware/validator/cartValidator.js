@@ -5,15 +5,18 @@ module.exports.createCartValidator = [
     .isMongoId()
     .withMessage('Product ID must be a valid MongoDB ID'),
   body('quantity')
+    .optional()
     .isInt({ min: 1 })
     .withMessage('Quantity must be a positive integer'),
   body('color').isString().withMessage('Color must be a string'),
-  body('price').isNumeric().withMessage('Price must be a number'),
+  body('price').optional().isFloat().withMessage('Price must be a number'),
   body('totalCartPrice')
-    .isNumeric()
+    .isFloat()
+    .optional()
     .withMessage('Total cart price must be a number'),
   body('priceAfterDiscount')
-    .isNumeric()
+    .isFloat()
+    .optional()
     .withMessage('Price after discount must be a number'),
 ];
 module.exports.getCartValidator = [
@@ -38,7 +41,7 @@ module.exports.updateCartValidator = [
     .withMessage('Color must be a string'),
   body('price')
     .optional()
-    .isNumeric()
+    .isFloat()
     .withMessage('Price must be a number'),
   body('totalCartPrice')
     .optional()
