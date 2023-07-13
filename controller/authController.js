@@ -5,6 +5,7 @@ const User = require("../Model/userModel");
 const sendEmail = require("../utils/sendEmail");
 const AppError = require("../utils/appError");
 const catchAsync = require("../utils/catchAsync");
+const {sanitizeUser} = require("../utils/sanitizeData");
 
 exports.signUp = async (request, response, next) => {
   try {
