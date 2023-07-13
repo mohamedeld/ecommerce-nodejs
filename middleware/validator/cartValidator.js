@@ -1,4 +1,5 @@
 const {query,param,body} = require("express-validator");
+const User = require("../../Model/userModel");
 
 module.exports.createCartValidator = [
   body('productId')
@@ -59,3 +60,11 @@ module.exports.deleteCartValidator = [
     .isMongoId()
     .withMessage('please enter valid id'),
 ];
+
+module.exports.applyCoupon = [
+  body("name").notEmpty().withMessage("please enter coupon name").custom(async (val,{req})=>{
+    return await User.findOne({user:req.user._id}).then(user=>{
+      
+    });
+  })
+]
